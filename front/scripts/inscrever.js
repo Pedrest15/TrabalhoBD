@@ -53,8 +53,11 @@ document.querySelector("#universidade").addEventListener("change", function() {
 async function carregarUFs() {
     try {
         const response = await fetch("http://127.0.0.1:2000/uf-code");
+
+        // Verificar se a resposta foi bem-sucedida
         if (!response.ok) {
-            throw new Error("Erro ao buscar UFs");
+            const errorData = await response.json();
+            throw new Error(errorData.detail || "Erro ao buscar UFs");
         }
 
         const data = await response.json();
@@ -73,10 +76,9 @@ async function carregarUFs() {
         });
     } catch (error) {
         console.error("Erro ao carregar UFs:", error);
-        alert("Erro ao carregar UFs. Por favor, tente novamente.");
+        alert(`Erro ao carregar UFs: ${error.message}. Por favor, tente novamente.`);
     }
 }
-
 
 // Função para buscar universidades do backend
 async function carregarUniversidades() {

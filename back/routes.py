@@ -2,6 +2,7 @@ from fastapi import APIRouter, HTTPException
 from log import LoggerMessages, logger
 from models import InsertAtletaRequest, VerifyCpfRequest, SelectTimesRequest
 from db import db_assist
+import oracledb
 
 router = APIRouter()
 
@@ -13,6 +14,23 @@ async def get_uf_code():
 
         return {"message": siglas}
     
+    except oracledb.DatabaseError as e:
+        error, = e.args
+        error_code = error.code
+        error_message = error.message
+
+        if error_code == 12154:  # ORA-12154: TNS:could not resolve the connect identifier specified
+            logger.error(f"Erro de conexão: {error_message}")
+            raise HTTPException(status_code=500, detail="Erro de conexão com o banco de dados. Verifique o identificador TNS.")
+        
+        elif error_code in [942, 20001]:  # ORA-942: table or view does not exist ou outros erros conhecidos
+            logger.error(f"Erro de consulta: {error_message}")
+            raise HTTPException(status_code=400, detail="Erro de consulta SQL. A tabela ou view não existe.")
+
+        else:
+            logger.error(f"Erro desconhecido: {error_message}")
+            raise HTTPException(status_code=500, detail="Erro inesperado ao acessar o banco de dados.")
+
     except Exception as err:
         logger.error(err)
         raise HTTPException(status_code=500, detail="Internal Server Error")
