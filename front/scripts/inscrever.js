@@ -140,12 +140,12 @@ btnInscrever.addEventListener("click", async function () {
         cpf,
         nome,
         genero,
-        idade: parseInt(idade), // Substitua por um cálculo ou valor fixo, se necessário
+        idade: parseInt(idade),
         rua,
         bairro,
         numero: parseInt(numero),
         cidade,
-        uf: parseInt(uf),
+        uf,
         telefone,
         codigo_matricula: codigoMatricula,
         ano_ingresso: parseInt(anoIngresso),
@@ -164,9 +164,19 @@ btnInscrever.addEventListener("click", async function () {
         });
 
         if (!response.ok) {
-            throw new Error(`Erro na requisição: ${response.status}`);
+            const errorData = await response.json(); // Obtém o corpo da resposta com detalhes do erro
+            if (errorData && errorData.detail) {
+                // Exibe a mensagem detalhada do backend
+                alert(`Erro ao inscrever atleta: ${errorData.detail}`);
+                console.error("Erro do backend:", errorData.detail);
+            } else {
+                // Caso a mensagem detalhada não esteja disponível
+                throw new Error(`Erro na requisição: ${response.status}`);
+            }
+            return;
         }
 
+        // Sucesso: Lida com a resposta do backend
         const data = await response.json();
         alert("Atleta inscrito com sucesso!");
         console.log("Resposta do backend:", data);
@@ -176,8 +186,9 @@ btnInscrever.addEventListener("click", async function () {
             input.value = "";
         });
     } catch (error) {
+        // Lida com erros inesperados
         alert(`Erro ao inscrever atleta: ${error.message}`);
-        console.error("Erro:", error);
+        console.error("Erro inesperado:", error);
     }
 });
 

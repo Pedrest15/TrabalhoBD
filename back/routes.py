@@ -1,8 +1,9 @@
 from fastapi import APIRouter, HTTPException
-from log import LoggerMessages, logger
+from log import logger
 from models import InsertAtletaRequest, VerifyCpfRequest, SelectTimesRequest
 from db import db_assist
 import oracledb
+from utils import oracle_select_errors, oracle_insert_errors
 
 router = APIRouter()
 
@@ -14,26 +15,19 @@ async def get_uf_code():
 
         return {"message": siglas}
     
-    except oracledb.DatabaseError as e:
-        error, = e.args
-        error_code = error.code
-        error_message = error.message
-
-        if error_code == 12154:  # ORA-12154: TNS:could not resolve the connect identifier specified
-            logger.error(f"Erro de conexão: {error_message}")
-            raise HTTPException(status_code=500, detail="Erro de conexão com o banco de dados. Verifique o identificador TNS.")
-        
-        elif error_code in [942, 20001]:  # ORA-942: table or view does not exist ou outros erros conhecidos
-            logger.error(f"Erro de consulta: {error_message}")
-            raise HTTPException(status_code=400, detail="Erro de consulta SQL. A tabela ou view não existe.")
-
-        else:
-            logger.error(f"Erro desconhecido: {error_message}")
-            raise HTTPException(status_code=500, detail="Erro inesperado ao acessar o banco de dados.")
-
+    except oracledb.DatabaseError as err:
+        oracle_select_errors(err)  # Chama a função de tratamento
+    except oracledb.IntegrityError as err:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Erro de integridade no banco de dados: {err}"
+        )
     except Exception as err:
         logger.error(err)
-        raise HTTPException(status_code=500, detail="Internal Server Error")
+        raise HTTPException(
+            status_code=500,
+            detail="Erro interno no servidor"
+        )
 
 @router.get("/universidades")
 async def get_universidades():
@@ -43,9 +37,19 @@ async def get_universidades():
 
         return {"message": universidades}
     
+    except oracledb.DatabaseError as err:
+        oracle_select_errors(err)  # Chama a função de tratamento
+    except oracledb.IntegrityError as err:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Erro de integridade no banco de dados: {err}"
+        )
     except Exception as err:
         logger.error(err)
-        raise HTTPException(status_code=500, detail="Internal Server Error")
+        raise HTTPException(
+            status_code=500,
+            detail="Erro interno no servidor"
+        )
 
 @router.get("/cursos")
 async def get_cursos(universidade_codigo: str = None):
@@ -58,9 +62,19 @@ async def get_cursos(universidade_codigo: str = None):
 
         return {"message": cursos}
     
+    except oracledb.DatabaseError as err:
+        oracle_select_errors(err)  # Chama a função de tratamento
+    except oracledb.IntegrityError as err:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Erro de integridade no banco de dados: {err}"
+        )
     except Exception as err:
         logger.error(err)
-        raise HTTPException(status_code=500, detail="Internal Server Error")
+        raise HTTPException(
+            status_code=500,
+            detail="Erro interno no servidor"
+        )
 
 @router.post("/insert-atleta")
 async def insert_atleta(request: InsertAtletaRequest):
@@ -83,10 +97,20 @@ async def insert_atleta(request: InsertAtletaRequest):
         db_assist.insert(table="ATLETA", data=data)
 
         return {"message": "sucesso"}
-
+    
+    except oracledb.DatabaseError as err:
+        oracle_insert_errors(err)  # Chama a função de tratamento
+    except oracledb.IntegrityError as err:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Problema de integridade no banco de dados: {err}"
+        )
     except Exception as err:
         logger.error(err)
-        raise HTTPException(status_code=500, detail="Internal Server Error")
+        raise HTTPException(
+            status_code=500,
+            detail="Erro interno no servidor"
+        )
 
 @router.post("/times")
 async def get_times(request: SelectTimesRequest):
@@ -141,29 +165,60 @@ async def get_times(request: SelectTimesRequest):
             "times": times_list
         }
     
+    except oracledb.DatabaseError as err:
+        oracle_select_errors(err)  # Chama a função de tratamento
+    except oracledb.IntegrityError as err:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Erro de integridade no banco de dados: {err}"
+        )
     except Exception as err:
         logger.error(err)
-        raise HTTPException(status_code=500, detail="Internal Server Error")
+        raise HTTPException(
+            status_code=500,
+            detail="Erro interno no servidor"
+        )
 
 @router.post("/verify-cpf")
 def verify_cpf(request: VerifyCpfRequest):
     try:
         cpf = request.cpf
 
-        atleta = db_assist.select(table="ATLETA", columns_wanted=["CPF"], where_data={"CPF": cpf}, return_one=True)
+        # Consulta no banco
+        atleta = db_assist.select(
+            table="ATLETA", 
+            columns_wanted=["CPF"], 
+            where_data={"CPF": cpf}, 
+            return_one=True
+        )
+
+        # Retorna se o CPF foi encontrado
         if atleta:
             return {"message": True}
         return {"message": False}
     
+    # Tratamento de erros do banco de dados
+    except oracledb.DatabaseError as err:
+        oracle_select_errors(err)  # Chama a função de tratamento
+    except oracledb.IntegrityError as err:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Erro de integridade no banco de dados: {err}"
+        )
     except Exception as err:
         logger.error(err)
-        raise HTTPException(status_code=500, detail="Internal Server Error")
+        raise HTTPException(
+            status_code=500,
+            detail="Erro interno no servidor"
+        )
 
 @router.post("/get-atleta-infos")
 def get_atleta_infos(request: VerifyCpfRequest):  
     try:
+        # Dados para a consulta
         data = {"cpf": request.cpf}
 
+        # Query SQL
         query = """
             SELECT 
                 A.CPF,
@@ -183,20 +238,41 @@ def get_atleta_infos(request: VerifyCpfRequest):
             WHERE A.CPF = :cpf
         """
 
+        # Execução da consulta
         atleta = db_assist.cursor.execute(query, data).fetchone()
 
+        # Verifica se o CPF foi encontrado
+        if not atleta:
+            raise HTTPException(
+                status_code=404,
+                detail="Atleta não encontrado para o CPF informado."
+            )
+
+        # Retorno dos dados
         return {
-                "message": True,
-                "cpf": atleta[0],
-                "nome": atleta[1],
-                "idade": atleta[2],
-                "genero": atleta[3],
-                "telefone": atleta[4],
-                "endereco": atleta[5],
-                "universidade": atleta[6],
-                "curso": atleta[7]
-            }
+            "message": True,
+            "cpf": atleta[0],
+            "nome": atleta[1],
+            "idade": atleta[2],
+            "genero": atleta[3],
+            "telefone": atleta[4],
+            "endereco": atleta[5],
+            "universidade": atleta[6],
+            "curso": atleta[7]
+        }
     
+    # Tratamento de erros do banco de dados
+    except oracledb.DatabaseError as err:
+        oracle_select_errors(err)  # Chama a função de tratamento
+    except oracledb.IntegrityError as err:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Erro de integridade no banco de dados: {err}"
+        )
     except Exception as err:
         logger.error(err)
-        raise HTTPException(status_code=500, detail="Internal Server Error")
+        raise HTTPException(
+            status_code=500,
+            detail="Erro interno no servidor"
+        )
+
