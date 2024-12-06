@@ -212,7 +212,39 @@ btnInscrever.addEventListener("click", async function () {
 });
 
 
-document.addEventListener("DOMContentLoaded", function() {
+// document.addEventListener("DOMContentLoaded", function() {
+//     carregarUFs();
+//     carregarUniversidades();
+// });
+
+document.addEventListener("DOMContentLoaded", function () {
     carregarUFs();
     carregarUniversidades();
+
+    // Referências aos campos
+    const universidadeSelect = document.querySelector("#universidade");
+    const cursoContainer = document.querySelector("#curso-container");
+
+    // Evento para mostrar o campo de curso quando uma universidade for selecionada
+    universidadeSelect.addEventListener("change", function () {
+        if (this.value) {
+            // Mostra o campo curso
+            cursoContainer.classList.remove("d-none");
+        } else {
+            // Esconde o campo curso
+            cursoContainer.classList.add("d-none");
+        }
+    });
+
+    // Adiciona validação antes do envio do formulário
+    const btnInscrever = document.querySelector("#ba1");
+    btnInscrever.addEventListener("click", function (event) {
+        const universidadeValue = universidadeSelect.value;
+        const cursoValue = document.querySelector("#curso").value;
+
+        if (!universidadeValue || !cursoValue) {
+            event.preventDefault(); // Impede o envio do formulário
+            alert("Por favor, selecione tanto a universidade quanto o curso.");
+        }
+    });
 });
