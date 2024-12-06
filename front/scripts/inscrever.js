@@ -20,11 +20,21 @@ async function carregarCursos(universidadeCodigo) {
 
         // Faz a requisição para obter os cursos com base no código da universidade
         const response = await fetch(`http://127.0.0.1:2000/cursos?universidade_codigo=${universidadeCodigo}`);
+
+        // Verifica se a resposta foi bem-sucedida
         if (!response.ok) {
-            throw new Error("Erro ao buscar cursos");
+            // Tenta extrair a mensagem de erro do corpo da resposta
+            const errorData = await response.json();
+            const errorMessage = errorData.detail || "Erro desconhecido ao buscar cursos";
+            throw new Error(errorMessage);
         }
 
         const data = await response.json();
+
+        // Verifica se a resposta contém os dados esperados
+        if (!data.message) {
+            throw new Error("Dados inválidos recebidos do servidor.");
+        }
 
         const selectCurso = document.querySelector("#curso");
 
@@ -40,7 +50,9 @@ async function carregarCursos(universidadeCodigo) {
         });
     } catch (error) {
         console.error("Erro ao carregar cursos:", error);
-        alert("Erro ao carregar cursos. Por favor, tente novamente.");
+        
+        // Exibe o erro para o usuário
+        alert(`Erro ao carregar cursos: ${error.message}`);
     }
 }
 
@@ -62,6 +74,11 @@ async function carregarUFs() {
 
         const data = await response.json();
 
+        // Verifica se os dados recebidos são válidos
+        if (!data.message) {
+            throw new Error("Dados inválidos recebidos do servidor.");
+        }
+
         const selectUF = document.querySelector("#uf");
 
         // Limpando o dropdown antes de preencher
@@ -76,7 +93,9 @@ async function carregarUFs() {
         });
     } catch (error) {
         console.error("Erro ao carregar UFs:", error);
-        alert(`Erro ao carregar UFs: ${error.message}. Por favor, tente novamente.`);
+        
+        // Exibe a mensagem de erro para o usuário
+        alert(`Erro ao carregar UFs: ${error.message}`);
     }
 }
 
@@ -105,8 +124,8 @@ async function carregarUniversidades() {
             selectUniversidade.appendChild(option);
         });
     } catch (error) {
-        console.error("Erro ao carregar universidades:", error);
-        alert("Erro ao carregar universidades. Por favor, tente novamente mais tarde.");
+        console.error("Erro ao carregar universidades: ", error.detail);
+        alert("Erro ao carregar universidades: ", error.detail);
     }
 }
 

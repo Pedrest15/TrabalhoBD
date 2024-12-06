@@ -14,7 +14,12 @@ document.addEventListener("DOMContentLoaded", function() {
             },
             body: JSON.stringify({ cpf: cpf })
         })
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                throw new Error("Erro ao fazer a requisição de dados do atleta.");
+            }
+            return response.json();
+        })
         .then(data => {
             if (data.message) {
                 // Dados do atleta
@@ -49,7 +54,12 @@ document.addEventListener("DOMContentLoaded", function() {
                         nome_curso: atleta.curso      // Substitua pelo nome do curso
                     })
                 })
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error("Erro ao fazer a requisição de dados dos times.");
+                    }
+                    return response.json();
+                })
                 .then(timesData => {
                     if (timesData.message && Array.isArray(timesData.times)) {
                         // Preenchendo a tabela com os times
@@ -60,7 +70,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 })
                 .catch(error => {
                     console.error("Erro ao fazer a requisição dos times:", error);
-                    alert("Erro ao recuperar dados dos times.");
+                    alert(`Erro ao recuperar dados dos times: ${error.message}`);
                 });
 
                 // Função para preencher a tabela com os times
@@ -91,7 +101,7 @@ document.addEventListener("DOMContentLoaded", function() {
         })
         .catch(error => {
             console.error("Erro ao fazer a requisição:", error);
-            alert("Erro ao recuperar dados do atleta.");
+            alert(`Erro ao recuperar dados do atleta: ${error.message}`);
         });
     }
 });

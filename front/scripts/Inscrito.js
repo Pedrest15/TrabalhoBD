@@ -26,7 +26,8 @@ btnVerificar.addEventListener("click", async function () {
         });
 
         if (!response.ok) {
-            throw new Error("Erro na requisição: " + response.status);
+            const errorData = await response.json();
+            throw new Error(errorData.detail || "Erro na requisição ao servidor");
         }
 
         // Ler a resposta do backend
@@ -43,7 +44,11 @@ btnVerificar.addEventListener("click", async function () {
             alert("CPF não encontrado no banco de dados.");
         }
     } catch (error) {
-        alert("Erro ao conectar ao servidor.");
+        // Exibir a mensagem de erro no console para depuração
+        console.error("Erro ao conectar ao servidor:", error);
+
+        // Exibir uma mensagem de erro detalhada ao usuário
+        alert(`Erro ao conectar ao servidor: ${error.message}`);
     }
 });
 
