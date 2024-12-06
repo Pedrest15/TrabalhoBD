@@ -47,7 +47,8 @@ class DB:
             raise err
         
     def select(self, table: str, columns_wanted: list[str] = None,
-               where_data: dict = None, return_one: bool = False) -> list[any]:
+               where_data: dict = None, return_one: bool = False,
+               orderby_asc:bool=None, order_column:str=None) -> list[any]:
         """
             Metodo generico para realizar selects em uma tabela.
 
@@ -67,12 +68,14 @@ class DB:
             query = f"SELECT {select_columns} FROM {table}"
 
             if where_data:
-                where_clause = ' AND '.join([f"{col} = %s" for col in where_data.keys()])
+                where_clause = ' AND '.join([f"{col} = :{col}" for col in where_data.keys()])
                 query += f" WHERE {where_clause}"
-                params = list(where_data.values())
-                self.cursor.execute(query, params=params)
+                params = where_data
+                query += f" ORDER BY {order_column} asc" if orderby_asc else ""
+                self.cursor.execute(query, params)
                 
             else:
+                query += f" ORDER BY {order_column} asc" if orderby_asc else ""
                 self.cursor.execute(query)
 
             # Retorna o resultado conforme o valor de return_one

@@ -1,0 +1,118 @@
+@font-face {
+    font-family: 'Jersey M54';
+    src: url('./Jersey\ M54.ttf') format('truetype'); /* Substitua pelo caminho e formato corretos */
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Coolvetica';
+    src: url('./coolvetica\ condensed\ rg.otf') format('truetype'); /* Substitua pelo caminho e formato corretos */
+    font-weight: normal;
+    font-style: normal;
+}
+ 
+
+
+
+
+.btn{
+    font-size: 30px;
+    background-color:rgb(215, 108, 54);
+    border-radius: 50px; 
+    margin: 0 15px;
+    width: auto;
+    height: 50px;
+    font-family: 'Coolvetica', cursive;
+    box-shadow: 0 0 0 0;
+    border: 0 none;
+    outline: 0;
+   
+}
+.btn:hover{
+    box-shadow: 0px 0px 0.5em rgba(233, 82, 92, 0.644);
+}
+
+.princ{
+    
+    background-color: white;
+    font-family: 'Coolvetica', cursive;
+}
+.form-control{
+    font-family: 'Coolvetica', cursive;
+    border-radius: 20px;
+    font-size: 20px;
+   
+    
+}
+.navbar{
+    margin-bottom: 0;
+    background-color:rgb(215, 108, 54); 
+     z-index: 9999;
+     border: 0; 
+     font-size: 20px; 
+     line-height: 1.5; 
+     letter-spacing: 4px; 
+     border-radius: 0; 
+     font-family: 'Coolvetica', cursive;
+ } 
+
+ .panel {
+    border: 1px solid #666163; 
+    border-radius:0 !important;
+    transition: box-shadow 0.5s;
+}
+
+.navbar li a, .navbar .navbar-brand {
+    color: #303030 !important; /* cor da letra cabeçalho */
+    margin-left: 0px;
+    margin-bottom: 0px;
+  }
+
+.navbar-nav li a:hover, .navbar-nav li.active a {
+    color: white!important; /* cor da letra quando passa por cima, cabeçalho */
+  
+  }
+.panel-footer h3 {
+    font-family: 'Coolvetica', cursive;
+    font-size: 0px;
+  }
+	 
+ 
+.container-fluid {
+    padding: 100px 50px;
+}
+
+h2 {
+    font-size: 60px;
+    color: rgb(215, 108, 54); 
+    font-weight: 600;
+    margin-bottom: 30px;
+    font-family: 'Jersey M54', sans-serif;
+}  
+
+h4 {
+    font-size: 60px;
+    line-height: 1.375em;
+    color: rgb(60, 66, 72);
+    font-weight: 300;
+    margin-bottom: 30px;
+    font-family: 'Jersey M54', sans-serif;
+}  
+
+h5 {
+    font-size: 30px;
+    line-height: 1.375em;
+    color: rgb(60, 66, 72);
+    font-weight: 300;
+    margin-bottom: 30px;
+    font-family: 'Jersey M54', sans-serif;
+}  
+
+body {
+    font-size: 35px;
+    font-family: 'Coolvetica', cursive;
+    line-height: 1.375em;
+    margin-bottom: 25px;
+}
+

@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Esportes Universitários</title>
+    <link rel="icon" href="./imagem/Capturar.PNG" />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Amatic+SC&display=swap" rel="stylesheet">
+    <script src="https://kit.fontawesome.com/923171a382.js" crossorigin="anonymous"></script>    
+    <link rel="stylesheet" href="estilo/estilos.css">
+    <style>
+        h6 {
+            font-size: 30px;
+            max-width: 800px;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            overflow: hidden;
+            color: white;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td {
+            padding: 10px;
+            border: 1px solid #ddd;
+        }
+        th {
+            background-color: #cccccc;
+            color: #3c4248;
+        }
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        tr:hover {
+            background-color: #ddd;
+        }
+    </style>
+</head>
+<body id="pagina" class="princ">
+
+<!-- Cabeçalho -->
+<nav class="navbar navbar-expand-md fixed-top navbar-dark" id="navbar">
+    <a class="navbar-brand" href="homepage.html"><img src="./imagem/Capturar.PNG" width="50" height="50" /></a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#myNavbar">
+        <span class="navbar-toggler-icon"></span>                       
+    </button>
+    <div class="collapse navbar-collapse" id="myNavbar"> 
+        <ul class="navbar-nav">
+            <li class="nav-item"><a class="nav-link" href="inscrito.html">PESQUISA</a></li>
+            <li class="nav-item"><a class="nav-link" href="index_pad.html">CADASTRO</a></li>
+            <li class="nav-item"><a class="nav-link" href="sobre.html">SOBRE NÓS</a></li>
+        </ul>
+    </div>
+</nav>
+
+<!-- Dados -->
+<div id="pagina" class="container-fluid text-center">
+    <div class="col-sm-12" style="text-align: left;">
+        <h4 style="font-size: 55px;">Dados do Aluno</h4>
+    </div>
+    <div class="col" style="background-color: #cccccc; padding: 20px; padding-left: 40px; padding-right: 40px; border-radius: 10px; margin: 5px;">
+        <div style="display: flex; justify-content: space-between; flex-wrap: wrap;">
+            <div style="flex: 1; min-width: 300px; text-align: left; margin-right: 20px;">
+                <h6><b style="margin-right: 5px; color: rgb(60, 66, 72)">Nome: </b><span id="atleta-nome"></span></h6>
+                <h6><b style="margin-right: 5px; color: rgb(60, 66, 72)">Gênero: </b><span id="atleta-genero"></span></h6>
+                <h6><b style="margin-right: 5px; color: rgb(60, 66, 72)">CPF: </b><span id="atleta-cpf"></span></h6>
+            </div>
+            <div style="flex: 1; min-width: 300px; text-align: left;">
+                <h6><b style="margin-right: 5px; color: rgb(60, 66, 72)">Idade: </b><span id="atleta-idade"></span></h6>
+                <h6><b style="margin-right: 5px; color: rgb(60, 66, 72)">Endereço: </b><span id="atleta-endereco"></span></h6>
+                <h6><b style="margin-right: 5px; color: rgb(60, 66, 72)">Telefone: </b><span id="atleta-telefone"></span></h6>
+            </div>
+        </div>
+    </div>
+    <br><br>
+    <div class="col-sm-12">
+        <h2>Times Disponíveis</h2>
+    </div>
+    <div class="col-sm-12">
+        <table id="tabela-times" style="width: 100%; border-collapse: collapse; margin: 20px 0; text-align: left; background-color: #f9f9f9; border-radius: 10px; overflow: hidden; font-size: 30px;">
+            <thead>
+                <tr style="background-color: #cccccc; color: #3c4248;">
+                    <th style="padding: 10px; border: 1px solid #ddd;">Nome</th>
+                    <th style="padding: 10px; border: 1px solid #ddd;">Esporte</th>
+                    <th style="padding: 10px; border: 1px solid #ddd;">Treinador</th>
+                    <th style="padding: 10px; border: 1px solid #ddd;">Gênero</th>
+                    <th style="padding: 10px; border: 1px solid #ddd;">Organização Universitária</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Linhas serão adicionadas dinamicamente aqui -->
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Vincule o arquivo de script externo -->
+<script src="./scripts/pesquisa.js"></script>
+
+</body>
+</html>

@@ -1,69 +1,51 @@
 from fastapi import APIRouter, HTTPException
 from log import LoggerMessages, logger
-from time import time
-from models import InsertAtletaRequest, SelectTimesRequest
+from models import InsertAtletaRequest, VerifyCpfRequest, SelectTimesRequest
 from db import db_assist
 
 router = APIRouter()
 
 @router.get("/uf-code")
 async def get_uf_code():
-    start_time = time()
-    
     try:
-        siglas = db_assist.select(table='UF_CODE', columns_wanted=['CODIGO_UF','SIGLA'])
+        sig = db_assist.select(table='UF_CODE', columns_wanted=['CODIGO_UF','SIGLA'], orderby_asc=True, order_column="SIGLA")
+        siglas = [{"CODIGO_UF": s[0], "SIGLA": s[1]} for s in sig]
 
         return {"message": siglas}
     
     except Exception as err:
         logger.error(err)
         raise HTTPException(status_code=500, detail="Internal Server Error")
-    
-    finally:
-        end_time = time()
-        duration = end_time - start_time
-        logger.info(LoggerMessages.time_info(duration=duration))
 
-@router.get("universidades")
+@router.get("/universidades")
 async def get_universidades():
-    start_time = time()
-    
     try:
         uni = db_assist.select(table='UNIVERSIDADE', columns_wanted=['CODIGO_MEC', 'NOME'])
+        universidades = [{"CODIGO_MEC": u[0], "NOME": u[1]} for u in uni]
 
-        return {"message": uni}
+        return {"message": universidades}
     
     except Exception as err:
         logger.error(err)
         raise HTTPException(status_code=500, detail="Internal Server Error")
-    
-    finally:
-        end_time = time()
-        duration = end_time - start_time
-        logger.info(LoggerMessages.time_info(duration=duration))
 
-@router.get("cursos")
-async def get_universidades():
-    start_time = time()
-    
+@router.get("/cursos")
+async def get_cursos(universidade_codigo: str = None):
+    if not universidade_codigo:
+        raise HTTPException(status_code=400, detail="universidade_codigo é necessário")
+
     try:
-        cursos = db_assist.select(table='CURSO', columns_wanted=['UNIVERSIDADE', 'NOME'])
+        cur = db_assist.select(table='CURSO', columns_wanted=['NOME'], where_data={"UNIVERSIDADE": universidade_codigo})
+        cursos = [{"NOME": c[0]} for c in cur]
 
         return {"message": cursos}
     
     except Exception as err:
         logger.error(err)
         raise HTTPException(status_code=500, detail="Internal Server Error")
-    
-    finally:
-        end_time = time()
-        duration = end_time - start_time
-        logger.info(LoggerMessages.time_info(duration=duration))
 
 @router.post("/insert-atleta")
 async def insert_atleta(request: InsertAtletaRequest):
-    start_time = time()
-
     try:
         data={"cpf": request.cpf,
               "nome": request.nome,
@@ -87,46 +69,116 @@ async def insert_atleta(request: InsertAtletaRequest):
     except Exception as err:
         logger.error(err)
         raise HTTPException(status_code=500, detail="Internal Server Error")
-    
-    finally:
-        end_time = time()
-        duration = end_time - start_time
-        logger.info(LoggerMessages.time_info(duration=duration))
 
 @router.post("/times")
 async def get_times(request: SelectTimesRequest):
-    start_time = time()
-    
     try:
         data={
-            "genero": request.genero,
+            "genero": 'M' if request.genero == "Masculino" else 'F',
             "universidade": request.universidade,
             "nome_curso": request.nome_curso.upper()
             }
 
         query = """
-            select t.esporte, u.NOME as "Universidade", o.NOME as "Organização", t.genero
-            from TIME t
-            join ORGANIZACAO_UNIVERSITARIA o 
-                on o.UNIVERSIDADE = t.UNIVERSIDADE and o.NOME = t.ORGANIZACAO_UNIVERSITARIA
-            join UNIVERSIDADE u 
-                on u.CODIGO_MEC = o.UNIVERSIDADE
-            where t.genero = :genero 
-                AND o.UNIVERSIDADE = :universidade 
-                AND o.NOME = :nome_curso
+            (
+                SELECT t.esporte, u.NOME AS "Universidade", o.NOME AS "Organização", t.genero, tr.NOME AS "Treinador"
+                FROM TIME t
+                JOIN ORGANIZACAO_UNIVERSITARIA o 
+                    ON o.UNIVERSIDADE = t.UNIVERSIDADE AND o.NOME = t.ORGANIZACAO_UNIVERSITARIA
+                JOIN UNIVERSIDADE u 
+                    ON u.CODIGO_MEC = o.UNIVERSIDADE
+                JOIN TREINADOR tr ON tr.TIME = t.ID
+                where t.genero = :genero 
+                    AND o.UNIVERSIDADE = :universidade 
+                    AND o.NOME = :nome_curso
+            )
+            UNION
+            (
+                SELECT t.esporte, u.NOME AS "Universidade", atl.NOME AS "Organização", t.genero, tr.NOME AS "Treinador"
+                FROM TIME t
+                JOIN ATLETICA atl ON atl.UNIVERSIDADE = t.UNIVERSIDADE AND atl.NOME = t.ORGANIZACAO_UNIVERSITARIA
+                JOIN UNIVERSIDADE u
+                    ON u.CODIGO_MEC = t.UNIVERSIDADE
+                JOIN TREINADOR tr ON tr.TIME = t.ID
+                WHERE t.genero = :genero 
+                    AND t.UNIVERSIDADE = :universidade
+            )
         """
 
         times = db_assist.cursor.execute(query, data).fetchall()
 
-        return {"message": times}
+        times_list = []
+        for t in times:
+            times_list.append({
+                "esporte": t[0],
+                "universidade": t[1],
+                "organizacao": t[2],
+                "genero": 'Masculino' if t[3] == 'M' else 'Feminino',
+                "treinador": t[4]
+            })
+
+        # Retornando os dados
+        return {
+            "message": True,
+            "times": times_list
+        }
     
     except Exception as err:
         logger.error(err)
         raise HTTPException(status_code=500, detail="Internal Server Error")
+
+@router.post("/verify-cpf")
+def verify_cpf(request: VerifyCpfRequest):
+    try:
+        cpf = request.cpf
+
+        atleta = db_assist.select(table="ATLETA", columns_wanted=["CPF"], where_data={"CPF": cpf}, return_one=True)
+        if atleta:
+            return {"message": True}
+        return {"message": False}
     
-    finally:
-        end_time = time()
-        duration = end_time - start_time
-        logger.info(LoggerMessages.time_info(duration=duration))
+    except Exception as err:
+        logger.error(err)
+        raise HTTPException(status_code=500, detail="Internal Server Error")
 
+@router.post("/get-atleta-infos")
+def get_atleta_infos(request: VerifyCpfRequest):  
+    try:
+        data = {"cpf": request.cpf}
 
+        query = """
+            SELECT 
+                A.CPF,
+                A.NOME,
+                A.IDADE,
+                CASE 
+                    WHEN A.GENERO = 'M' THEN 'Masculino'
+                    ELSE 'Feminino'
+                END AS GENERO,
+                A.TELEFONE,
+                A.CIDADE || ' - ' || UF.SIGLA AS ENDERECO,
+                A.UNIVERSIDADE,
+                A.NOME_CURSO
+            FROM 
+                ATLETA A
+            JOIN UF_CODE UF ON A.UF = UF.CODIGO_UF
+            WHERE A.CPF = :cpf
+        """
+
+        atleta = db_assist.cursor.execute(query, data).fetchone()
+
+        return {
+                "message": True,
+                "cpf": atleta[0],
+                "nome": atleta[1],
+                "idade": atleta[2],
+                "genero": atleta[3],
+                "telefone": atleta[4],
+                "endereco": atleta[5],
+                "universidade": atleta[6],
+                "curso": atleta[7]
+            }
+    
+    except Exception as err:
+        logger.error(err)
+        raise HTTPException(status_code=500, detail="Internal Server Error")

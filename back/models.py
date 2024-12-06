@@ -16,6 +16,9 @@ class InsertAtletaRequest(BaseModel):
     universidade: str
     nome_curso: str
 
+class VerifyCpfRequest(BaseModel):
+    cpf:str
+
 class SelectTimesRequest(BaseModel):
     genero: str
     universidade: str
