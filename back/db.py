@@ -85,6 +85,7 @@ class DB:
             return self.cursor.fetchone() if return_one else self.cursor.fetchall()
 
         except Exception as err:
+            self.conn.rollback()
             raise err
         
 db_assist = DB(user=settings.DB_USER, password=settings.DB_PASSWORD, dns=settings.DB_DNS)
