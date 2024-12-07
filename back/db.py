@@ -71,11 +71,14 @@ class DB:
                 where_clause = ' AND '.join([f"{col} = :{col}" for col in where_data.keys()])
                 query += f" WHERE {where_clause}"
                 params = where_data
-                query += f" ORDER BY {order_column} asc" if orderby_asc else ""
+                if order_column:
+                    order_clause = f" ORDER BY {order_column} {'ASC' if orderby_asc else 'DESC'}"
+                    query += order_clause
                 self.cursor.execute(query, params)
-                
             else:
-                query += f" ORDER BY {order_column} asc" if orderby_asc else ""
+                if order_column:
+                    order_clause = f" ORDER BY {order_column} {'ASC' if orderby_asc else 'DESC'}"
+                    query += order_clause
                 self.cursor.execute(query)
 
             # Retorna o resultado conforme o valor de return_one
