@@ -11,3 +11,6 @@ starlette==0.41.3
 typing_extensions==4.12.2
 uvicorn==0.32.1
 win32-setctime==1.1.0
+loguru
+oracledb
+pydantic_settings
